@@ -60,3 +60,15 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Documentation files (except README.md)
 *.md
 !README.md
+
+# Uploads directory (archivos subidos por usuarios)
+/uploads/*
+!/uploads/perfiles/
+!/uploads/vehiculos/
+!/uploads/documentos/
+!/uploads/general/
+/uploads/perfiles/*
+/uploads/vehiculos/*
+/uploads/documentos/*
+/uploads/general/*
+!.gitkeep

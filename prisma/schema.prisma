@@ -81,24 +81,31 @@ model TokenVerificacion {
 }
 
 model Vehiculo {
-  id_vehiculo         Int       @id @default(autoincrement())
-  id_usuario          Int
-  marca               String    @db.VarChar(50)
-  modelo              String    @db.VarChar(50)
-  anio                Int
-  color               String    @db.VarChar(30)
-  placa               String    @unique @db.VarChar(20)
-  capacidad_pasajeros Int
-  tipo_vehiculo       String?   @db.VarChar(30)
-  foto_vehiculo       String?   @db.VarChar(255)
-  estado              String    @default("activo") @db.VarChar(20)
-  verificado          Boolean   @default(false)
-  fecha_registro      DateTime  @default(now())
+  id_vehiculo              Int       @id @default(autoincrement())
+  id_usuario               Int
+  marca                    String    @db.VarChar(50)
+  modelo                   String    @db.VarChar(50)
+  anio                     Int
+  color                    String    @db.VarChar(30)
+  placa                    String    @unique @db.VarChar(20)
+  matricula                String    @db.VarChar(50)
+  capacidad_pasajeros      Int
+  tipo_vehiculo            String    @db.VarChar(30) // "Moto" o "Carro"
+  foto_vehiculo            String?   @db.VarChar(255)
+  foto_tarjeta_propiedad   String?   @db.VarChar(255)
+  foto_soat                String?   @db.VarChar(255)
+  foto_matricula           String?   @db.VarChar(255)
+  estado                   String    @default("activo") @db.VarChar(20)
+  verificado               Boolean   @default(false)
+  fecha_registro           DateTime  @default(now())
+  fecha_actualizacion      DateTime  @default(now())
   
-  usuario             Usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
-  rutas               Ruta[]
-  viajes              Viaje[]
+  usuario                  Usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  rutas                    Ruta[]
+  viajes                   Viaje[]
 
+  @@index([id_usuario])
+  @@index([placa])
   @@map("vehiculos")
 }
 

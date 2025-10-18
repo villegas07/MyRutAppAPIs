@@ -1,9 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // Servir archivos estáticos
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
   
   // Habilitar CORS
   const allowedOrigins = process.env.FRONTEND_URL 
@@ -34,6 +41,7 @@ async function bootstrap() {
   
   const appUrl = process.env.APP_URL || `http://localhost:${port}`;
   console.log(`🚀 Aplicación corriendo en: ${appUrl}/api`);
+  console.log(`📂 Archivos estáticos: ${appUrl}/uploads`);
   console.log(`📚 Entorno: ${process.env.NODE_ENV || 'development'}`);
 }
 bootstrap();
