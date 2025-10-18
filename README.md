@@ -650,4 +650,3 @@ MIT License - Proyecto de Grado
 
 ---
 
-**🚀 Tu API está lista para el siguiente nivel. ¡Hora de construir los módulos de negocio!**
