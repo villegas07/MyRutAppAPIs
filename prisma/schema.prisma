@@ -1,0 +1,535 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario               Int       @id @default(autoincrement())
+  nombre                   String    @db.VarChar(100)
+  apellido                 String    @db.VarChar(100)
+  nombre_usuario           String    @unique @db.VarChar(50)
+  email                    String    @unique @db.VarChar(150)
+  telefono                 String    @db.VarChar(20)
+  password_hash            String    @db.VarChar(255)
+  foto_perfil              String?   @db.VarChar(255)
+  rol                      String    @default("usuario") @db.VarChar(20)
+  fecha_registro           DateTime  @default(now())
+  fecha_nacimiento         DateTime? @db.Date
+  calificacion_conductor   Decimal   @default(0.00) @db.Decimal(3, 2)
+  calificacion_pasajero    Decimal   @default(0.00) @db.Decimal(3, 2)
+  total_viajes_conductor   Int       @default(0)
+  total_viajes_pasajero    Int       @default(0)
+  estado_cuenta            String    @default("activo") @db.VarChar(20)
+  verificado               Boolean   @default(false)
+  ultimo_acceso            DateTime?
+  refresh_token            String?   @db.Text
+  
+  // Relaciones
+  vehiculos                Vehiculo[]
+  rutas_conductor          Ruta[]                 @relation("ConductorRutas")
+  ofertas_pasajero         Oferta[]               @relation("PasajeroOfertas")
+  contraofertas_conductor  Contraoferta[]         @relation("ConductorContraofertas")
+  viajes_conductor         Viaje[]                @relation("ConductorViajes")
+  viajes_pasajero          Viaje[]                @relation("PasajeroViajes")
+  pagos_pasajero           Pago[]                 @relation("PasajeroPagos")
+  pagos_conductor          Pago[]                 @relation("ConductorPagos")
+  calificaciones_evaluador Calificacion[]         @relation("EvaluadorCalificaciones")
+  calificaciones_evaluado  Calificacion[]         @relation("EvaluadoCalificaciones")
+  notificaciones           Notificacion[]
+  mensajes_remitente       Mensaje[]              @relation("RemitenteMessages")
+  mensajes_destinatario    Mensaje[]              @relation("DestinatarioMessages")
+  documentos               Documento[]
+  ubicaciones              Ubicacion[]
+  reportes_reportante      Reporte[]              @relation("ReportanteReportes")
+  reportes_reportado       Reporte[]              @relation("ReportadoReportes")
+  reportes_admin           Reporte[]              @relation("AdminReportes")
+  sanciones                Sancion[]              @relation("UsuarioSanciones")
+  sanciones_admin          Sancion[]              @relation("AdminSanciones")
+  verificaciones           Verificacion[]
+  retiros                  Retiro[]               @relation("ConductorRetiros")
+  retiros_admin            Retiro[]               @relation("AdminRetiros")
+  logs_auditoria           LogAuditoria[]
+  cupones_usados           CuponUsado[]
+  tokens_verificacion      TokenVerificacion[]
+
+  @@index([email])
+  @@index([rol])
+  @@map("usuarios")
+}
+
+model TokenVerificacion {
+  id_token       Int      @id @default(autoincrement())
+  id_usuario     Int
+  token          String   @unique @db.VarChar(255)
+  tipo           String   @db.VarChar(50) // verificacion_email, recuperar_password, reactivar_cuenta
+  usado          Boolean  @default(false)
+  fecha_creacion DateTime @default(now())
+  fecha_expira   DateTime
+  
+  usuario        Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([token])
+  @@index([id_usuario])
+  @@map("tokens_verificacion")
+}
+
+model Vehiculo {
+  id_vehiculo         Int       @id @default(autoincrement())
+  id_usuario          Int
+  marca               String    @db.VarChar(50)
+  modelo              String    @db.VarChar(50)
+  anio                Int
+  color               String    @db.VarChar(30)
+  placa               String    @unique @db.VarChar(20)
+  capacidad_pasajeros Int
+  tipo_vehiculo       String?   @db.VarChar(30)
+  foto_vehiculo       String?   @db.VarChar(255)
+  estado              String    @default("activo") @db.VarChar(20)
+  verificado          Boolean   @default(false)
+  fecha_registro      DateTime  @default(now())
+  
+  usuario             Usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  rutas               Ruta[]
+  viajes              Viaje[]
+
+  @@map("vehiculos")
+}
+
+model Ruta {
+  id_ruta             Int       @id @default(autoincrement())
+  id_conductor        Int
+  id_vehiculo         Int
+  origen_lat          Decimal   @db.Decimal(10, 8)
+  origen_lng          Decimal   @db.Decimal(11, 8)
+  origen_direccion    String    @db.Text
+  destino_lat         Decimal   @db.Decimal(10, 8)
+  destino_lng         Decimal   @db.Decimal(11, 8)
+  destino_direccion   String    @db.Text
+  fecha_salida        DateTime
+  precio_sugerido     Decimal   @db.Decimal(10, 2)
+  asientos_disponibles Int
+  asientos_ocupados   Int       @default(0)
+  distancia_km        Decimal?  @db.Decimal(10, 2)
+  duracion_estimada   Int?
+  estado              String    @default("publicada") @db.VarChar(20)
+  permite_equipaje    Boolean   @default(true)
+  permite_mascotas    Boolean   @default(false)
+  notas_adicionales   String?   @db.Text
+  fecha_publicacion   DateTime  @default(now())
+  fecha_actualizacion DateTime  @default(now())
+  
+  conductor           Usuario   @relation("ConductorRutas", fields: [id_conductor], references: [id_usuario], onDelete: Cascade)
+  vehiculo            Vehiculo  @relation(fields: [id_vehiculo], references: [id_vehiculo], onDelete: Cascade)
+  ofertas             Oferta[]
+  viajes              Viaje[]
+
+  @@index([id_conductor])
+  @@index([estado])
+  @@index([fecha_salida])
+  @@map("rutas")
+}
+
+model Oferta {
+  id_oferta                  Int            @id @default(autoincrement())
+  id_ruta                    Int
+  id_pasajero                Int
+  punto_recogida_lat         Decimal        @db.Decimal(10, 8)
+  punto_recogida_lng         Decimal        @db.Decimal(11, 8)
+  punto_recogida_direccion   String         @db.Text
+  punto_destino_lat          Decimal        @db.Decimal(10, 8)
+  punto_destino_lng          Decimal        @db.Decimal(11, 8)
+  punto_destino_direccion    String         @db.Text
+  cantidad_pasajeros         Int            @default(1)
+  precio_ofertado            Decimal        @db.Decimal(10, 2)
+  estado                     String         @default("pendiente") @db.VarChar(20)
+  notas_pasajero             String?        @db.Text
+  fecha_oferta               DateTime       @default(now())
+  fecha_expiracion           DateTime?
+  
+  ruta                       Ruta           @relation(fields: [id_ruta], references: [id_ruta], onDelete: Cascade)
+  pasajero                   Usuario        @relation("PasajeroOfertas", fields: [id_pasajero], references: [id_usuario], onDelete: Cascade)
+  contraofertas              Contraoferta[]
+  viajes                     Viaje[]
+
+  @@index([id_ruta])
+  @@index([id_pasajero])
+  @@index([estado])
+  @@map("ofertas")
+}
+
+model Contraoferta {
+  id_contraoferta      Int      @id @default(autoincrement())
+  id_oferta            Int
+  id_conductor         Int
+  precio_contraofertado Decimal @db.Decimal(10, 2)
+  estado               String   @default("pendiente") @db.VarChar(20)
+  notas_conductor      String?  @db.Text
+  fecha_contraoferta   DateTime @default(now())
+  fecha_expiracion     DateTime?
+  
+  oferta               Oferta   @relation(fields: [id_oferta], references: [id_oferta], onDelete: Cascade)
+  conductor            Usuario  @relation("ConductorContraofertas", fields: [id_conductor], references: [id_usuario], onDelete: Cascade)
+
+  @@map("contraofertas")
+}
+
+model Viaje {
+  id_viaje                  Int            @id @default(autoincrement())
+  id_ruta                   Int
+  id_oferta                 Int
+  id_conductor              Int
+  id_pasajero               Int
+  id_vehiculo               Int
+  precio_final              Decimal        @db.Decimal(10, 2)
+  cantidad_pasajeros        Int
+  estado                    String         @default("confirmado") @db.VarChar(20)
+  punto_recogida_lat        Decimal        @db.Decimal(10, 8)
+  punto_recogida_lng        Decimal        @db.Decimal(11, 8)
+  punto_recogida_direccion  String         @db.Text
+  punto_destino_lat         Decimal        @db.Decimal(10, 8)
+  punto_destino_lng         Decimal        @db.Decimal(11, 8)
+  punto_destino_direccion   String         @db.Text
+  fecha_recogida_estimada   DateTime
+  fecha_recogida_real       DateTime?
+  fecha_llegada_estimada    DateTime?
+  fecha_llegada_real        DateTime?
+  distancia_recorrida       Decimal?       @db.Decimal(10, 2)
+  fecha_confirmacion        DateTime       @default(now())
+  codigo_verificacion       String?        @db.VarChar(10)
+  
+  ruta                      Ruta           @relation(fields: [id_ruta], references: [id_ruta], onDelete: Cascade)
+  oferta                    Oferta         @relation(fields: [id_oferta], references: [id_oferta], onDelete: Cascade)
+  conductor                 Usuario        @relation("ConductorViajes", fields: [id_conductor], references: [id_usuario], onDelete: Cascade)
+  pasajero                  Usuario        @relation("PasajeroViajes", fields: [id_pasajero], references: [id_usuario], onDelete: Cascade)
+  vehiculo                  Vehiculo       @relation(fields: [id_vehiculo], references: [id_vehiculo], onDelete: Cascade)
+  pagos                     Pago[]
+  calificaciones            Calificacion[]
+  mensajes                  Mensaje[]
+  ubicaciones               Ubicacion[]
+  reportes                  Reporte[]
+  cupones_usados            CuponUsado[]
+
+  @@index([id_conductor])
+  @@index([id_pasajero])
+  @@index([estado])
+  @@map("viajes")
+}
+
+model Pago {
+  id_pago                Int      @id @default(autoincrement())
+  id_viaje               Int
+  id_pasajero            Int
+  id_conductor           Int
+  monto                  Decimal  @db.Decimal(10, 2)
+  comision_plataforma    Decimal  @db.Decimal(10, 2)
+  monto_conductor        Decimal  @db.Decimal(10, 2)
+  metodo_pago            String   @db.VarChar(30)
+  estado                 String   @default("pendiente") @db.VarChar(20)
+  referencia_transaccion String?  @db.VarChar(100)
+  fecha_pago             DateTime @default(now())
+  fecha_procesado        DateTime?
+  
+  viaje                  Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+  pasajero               Usuario  @relation("PasajeroPagos", fields: [id_pasajero], references: [id_usuario], onDelete: Cascade)
+  conductor              Usuario  @relation("ConductorPagos", fields: [id_conductor], references: [id_usuario], onDelete: Cascade)
+
+  @@map("pagos")
+}
+
+model Calificacion {
+  id_calificacion  Int      @id @default(autoincrement())
+  id_viaje         Int
+  id_evaluador     Int
+  id_evaluado      Int
+  tipo_evaluacion  String   @db.VarChar(20)
+  puntuacion       Int
+  comentario       String?  @db.Text
+  fecha_calificacion DateTime @default(now())
+  
+  viaje            Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+  evaluador        Usuario  @relation("EvaluadorCalificaciones", fields: [id_evaluador], references: [id_usuario], onDelete: Cascade)
+  evaluado         Usuario  @relation("EvaluadoCalificaciones", fields: [id_evaluado], references: [id_usuario], onDelete: Cascade)
+
+  @@map("calificaciones")
+}
+
+model Notificacion {
+  id_notificacion Int      @id @default(autoincrement())
+  id_usuario      Int
+  tipo            String   @db.VarChar(30)
+  titulo          String   @db.VarChar(100)
+  mensaje         String   @db.Text
+  leida           Boolean  @default(false)
+  id_referencia   Int?
+  tipo_referencia String?  @db.VarChar(30)
+  fecha_creacion  DateTime @default(now())
+  
+  usuario         Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_usuario])
+  @@map("notificaciones")
+}
+
+model Mensaje {
+  id_mensaje       Int      @id @default(autoincrement())
+  id_viaje         Int
+  id_remitente     Int
+  id_destinatario  Int
+  mensaje          String   @db.Text
+  leido            Boolean  @default(false)
+  fecha_envio      DateTime @default(now())
+  
+  viaje            Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+  remitente        Usuario  @relation("RemitenteMessages", fields: [id_remitente], references: [id_usuario], onDelete: Cascade)
+  destinatario     Usuario  @relation("DestinatarioMessages", fields: [id_destinatario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_viaje])
+  @@map("mensajes")
+}
+
+model Documento {
+  id_documento     Int            @id @default(autoincrement())
+  id_usuario       Int
+  tipo_documento   String         @db.VarChar(50)
+  numero_documento String?        @db.VarChar(100)
+  foto_documento   String?        @db.VarChar(255)
+  fecha_emision    DateTime?      @db.Date
+  fecha_vencimiento DateTime?     @db.Date
+  estado           String         @default("pendiente") @db.VarChar(20)
+  fecha_subida     DateTime       @default(now())
+  
+  usuario          Usuario        @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  verificaciones   Verificacion[]
+
+  @@map("documentos")
+}
+
+model Ubicacion {
+  id_ubicacion    Int      @id @default(autoincrement())
+  id_viaje        Int
+  id_usuario      Int
+  latitud         Decimal  @db.Decimal(10, 8)
+  longitud        Decimal  @db.Decimal(11, 8)
+  fecha_registro  DateTime @default(now())
+  
+  viaje           Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+  usuario         Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_viaje])
+  @@map("ubicaciones")
+}
+
+model Permiso {
+  id_permiso      Int            @id @default(autoincrement())
+  nombre_permiso  String         @unique @db.VarChar(50)
+  descripcion     String?        @db.Text
+  modulo          String         @db.VarChar(50)
+  fecha_creacion  DateTime       @default(now())
+  
+  roles_permisos  RolPermiso[]
+
+  @@map("permisos")
+}
+
+model RolPermiso {
+  id_rol_permiso   Int      @id @default(autoincrement())
+  rol              String   @db.VarChar(20)
+  id_permiso       Int
+  fecha_asignacion DateTime @default(now())
+  
+  permiso          Permiso  @relation(fields: [id_permiso], references: [id_permiso], onDelete: Cascade)
+
+  @@map("roles_permisos")
+}
+
+model Reporte {
+  id_reporte         Int       @id @default(autoincrement())
+  id_reportante      Int
+  id_reportado       Int
+  id_viaje           Int?
+  tipo_reporte       String    @db.VarChar(50)
+  categoria          String?   @db.VarChar(50)
+  descripcion        String    @db.Text
+  evidencia          String?   @db.VarChar(255)
+  estado             String    @default("pendiente") @db.VarChar(20)
+  prioridad          String    @default("media") @db.VarChar(20)
+  id_admin_asignado  Int?
+  resolucion         String?   @db.Text
+  fecha_reporte      DateTime  @default(now())
+  fecha_revision     DateTime?
+  fecha_resolucion   DateTime?
+  
+  reportante         Usuario   @relation("ReportanteReportes", fields: [id_reportante], references: [id_usuario], onDelete: Cascade)
+  reportado          Usuario   @relation("ReportadoReportes", fields: [id_reportado], references: [id_usuario], onDelete: Cascade)
+  viaje              Viaje?    @relation(fields: [id_viaje], references: [id_viaje], onDelete: SetNull)
+  admin              Usuario?  @relation("AdminReportes", fields: [id_admin_asignado], references: [id_usuario], onDelete: SetNull)
+  sanciones          Sancion[]
+
+  @@index([estado])
+  @@index([id_admin_asignado])
+  @@map("reportes")
+}
+
+model Sancion {
+  id_sancion     Int       @id @default(autoincrement())
+  id_usuario     Int
+  id_reporte     Int?
+  id_admin       Int
+  tipo_sancion   String    @db.VarChar(30)
+  duracion_dias  Int?
+  monto_multa    Decimal?  @db.Decimal(10, 2)
+  razon          String    @db.Text
+  estado         String    @default("activa") @db.VarChar(20)
+  fecha_inicio   DateTime  @default(now())
+  fecha_fin      DateTime?
+  notas_admin    String?   @db.Text
+  
+  usuario        Usuario   @relation("UsuarioSanciones", fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  reporte        Reporte?  @relation(fields: [id_reporte], references: [id_reporte], onDelete: SetNull)
+  admin          Usuario   @relation("AdminSanciones", fields: [id_admin], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_usuario])
+  @@map("sanciones")
+}
+
+model Verificacion {
+  id_verificacion     Int      @id @default(autoincrement())
+  id_documento        Int
+  id_admin            Int
+  estado_verificacion String   @db.VarChar(20)
+  motivo_rechazo      String?  @db.Text
+  fecha_verificacion  DateTime @default(now())
+  
+  documento           Documento @relation(fields: [id_documento], references: [id_documento], onDelete: Cascade)
+  admin               Usuario   @relation(fields: [id_admin], references: [id_usuario], onDelete: Cascade)
+
+  @@map("verificaciones")
+}
+
+model ConfiguracionComision {
+  id_comision        Int       @id @default(autoincrement())
+  tipo_servicio      String    @db.VarChar(50)
+  porcentaje_comision Decimal  @db.Decimal(5, 2)
+  monto_minimo       Decimal?  @db.Decimal(10, 2)
+  monto_maximo       Decimal?  @db.Decimal(10, 2)
+  activo             Boolean   @default(true)
+  fecha_inicio       DateTime  @default(now())
+  fecha_fin          DateTime?
+  id_admin           Int?
+  
+  @@map("configuracion_comisiones")
+}
+
+model Retiro {
+  id_retiro            Int       @id @default(autoincrement())
+  id_conductor         Int
+  monto_solicitado     Decimal   @db.Decimal(10, 2)
+  monto_aprobado       Decimal?  @db.Decimal(10, 2)
+  metodo_retiro        String    @db.VarChar(30)
+  datos_bancarios      String?   @db.Text
+  estado               String    @default("pendiente") @db.VarChar(20)
+  id_admin_revisor     Int?
+  motivo_rechazo       String?   @db.Text
+  referencia_transaccion String? @db.VarChar(100)
+  fecha_solicitud      DateTime  @default(now())
+  fecha_revision       DateTime?
+  fecha_procesado      DateTime?
+  
+  conductor            Usuario   @relation("ConductorRetiros", fields: [id_conductor], references: [id_usuario], onDelete: Cascade)
+  admin                Usuario?  @relation("AdminRetiros", fields: [id_admin_revisor], references: [id_usuario], onDelete: SetNull)
+
+  @@index([id_conductor])
+  @@index([estado])
+  @@map("retiros")
+}
+
+model LogAuditoria {
+  id_log           Int      @id @default(autoincrement())
+  id_usuario       Int?
+  tipo_usuario     String?  @db.VarChar(20)
+  accion           String   @db.VarChar(100)
+  modulo           String   @db.VarChar(50)
+  descripcion      String?  @db.Text
+  ip_address       String?  @db.VarChar(45)
+  datos_anteriores String?  @db.Text
+  datos_nuevos     String?  @db.Text
+  fecha_accion     DateTime @default(now())
+  
+  usuario          Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: SetNull)
+
+  @@index([id_usuario])
+  @@index([fecha_accion])
+  @@map("logs_auditoria")
+}
+
+model Cupon {
+  id_cupon          Int          @id @default(autoincrement())
+  codigo            String       @unique @db.VarChar(50)
+  tipo_descuento    String       @db.VarChar(20)
+  valor_descuento   Decimal      @db.Decimal(10, 2)
+  monto_minimo      Decimal?     @db.Decimal(10, 2)
+  limite_uso        Int?
+  usos_actuales     Int          @default(0)
+  fecha_inicio      DateTime
+  fecha_expiracion  DateTime
+  activo            Boolean      @default(true)
+  id_admin_creador  Int?
+  descripcion       String?      @db.Text
+  fecha_creacion    DateTime     @default(now())
+  
+  cupones_usados    CuponUsado[]
+
+  @@index([codigo])
+  @@map("cupones")
+}
+
+model CuponUsado {
+  id_cupon_usado  Int      @id @default(autoincrement())
+  id_cupon        Int
+  id_usuario      Int
+  id_viaje        Int
+  monto_descuento Decimal  @db.Decimal(10, 2)
+  fecha_uso       DateTime @default(now())
+  
+  cupon           Cupon    @relation(fields: [id_cupon], references: [id_cupon], onDelete: Cascade)
+  usuario         Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  viaje           Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+
+  @@map("cupones_usados")
+}
+
+model ConfiguracionApp {
+  id_config           Int      @id @default(autoincrement())
+  clave               String   @unique @db.VarChar(100)
+  valor               String   @db.Text
+  tipo_dato           String   @db.VarChar(20)
+  descripcion         String?  @db.Text
+  categoria           String?  @db.VarChar(50)
+  id_admin_modificador Int?
+  fecha_modificacion  DateTime @default(now())
+
+  @@map("configuracion_app")
+}
+
+model EstadisticaDiaria {
+  id_estadistica           Int      @id @default(autoincrement())
+  fecha                    DateTime @unique @db.Date
+  total_usuarios_nuevos    Int      @default(0)
+  total_rutas_publicadas   Int      @default(0)
+  total_viajes_completados Int      @default(0)
+  total_ofertas_realizadas Int      @default(0)
+  ingresos_totales         Decimal  @default(0.00) @db.Decimal(12, 2)
+  comisiones_totales       Decimal  @default(0.00) @db.Decimal(12, 2)
+  usuarios_activos         Int      @default(0)
+  conductores_activos      Int      @default(0)
+  fecha_calculo            DateTime @default(now())
+
+  @@map("estadisticas_diarias")
+}

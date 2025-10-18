@@ -1,0 +1,201 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "MyRut App - Authentication",
+  "dateExported": "2025-01-17",
+  "version": "1.0",
+  "requests": [
+    {
+      "name": "1. Register User",
+      "method": "POST",
+      "url": "{{base_url}}/auth/register",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "nombre": "Juan",
+          "apellido": "Pérez",
+          "email": "juan.perez@example.com",
+          "telefono": "3001234567",
+          "password": "Password123!",
+          "fecha_nacimiento": "1990-01-15"
+        }
+      }
+    },
+    {
+      "name": "2. Resend Verification Email",
+      "method": "POST",
+      "url": "{{base_url}}/auth/resend-verification",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "email": "juan.perez@example.com"
+        }
+      }
+    },
+    {
+      "name": "3. Verify Email",
+      "method": "GET",
+      "url": "{{base_url}}/auth/verify-email?token={{verification_token}}",
+      "headers": []
+    },
+    {
+      "name": "4. Login",
+      "method": "POST",
+      "url": "{{base_url}}/auth/login",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "email": "juan.perez@example.com",
+          "password": "Password123!"
+        }
+      },
+      "tests": [
+        "pm.test('Status is 200', () => {",
+        "  pm.response.to.have.status(200);",
+        "});",
+        "",
+        "const response = pm.response.json();",
+        "pm.environment.set('access_token', response.access_token);",
+        "pm.environment.set('refresh_token', response.refresh_token);"
+      ]
+    },
+    {
+      "name": "5. Get Profile",
+      "method": "GET",
+      "url": "{{base_url}}/auth/profile",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer {{access_token}}"
+        }
+      ]
+    },
+    {
+      "name": "6. Refresh Token",
+      "method": "POST",
+      "url": "{{base_url}}/auth/refresh",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "refresh_token": "{{refresh_token}}"
+        }
+      }
+    },
+    {
+      "name": "7. Forgot Password",
+      "method": "POST",
+      "url": "{{base_url}}/auth/forgot-password",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "email": "juan.perez@example.com"
+        }
+      }
+    },
+    {
+      "name": "8. Reset Password",
+      "method": "POST",
+      "url": "{{base_url}}/auth/reset-password",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "token": "{{reset_token}}",
+          "new_password": "NewPassword123!"
+        }
+      }
+    },
+    {
+      "name": "9. Deactivate Account",
+      "method": "DELETE",
+      "url": "{{base_url}}/auth/deactivate",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer {{access_token}}"
+        }
+      ]
+    },
+    {
+      "name": "10. Request Reactivation",
+      "method": "POST",
+      "url": "{{base_url}}/auth/request-reactivation",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": {
+          "email": "juan.perez@example.com"
+        }
+      }
+    },
+    {
+      "name": "11. Reactivate Account",
+      "method": "GET",
+      "url": "{{base_url}}/auth/reactivate-account?token={{reactivation_token}}",
+      "headers": []
+    },
+    {
+      "name": "12. Logout",
+      "method": "POST",
+      "url": "{{base_url}}/auth/logout",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer {{access_token}}"
+        }
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "name": "Local",
+      "variables": {
+        "base_url": "http://localhost:3000/api",
+        "access_token": "",
+        "refresh_token": "",
+        "verification_token": "",
+        "reset_token": "",
+        "reactivation_token": ""
+      }
+    }
+  ]
+}

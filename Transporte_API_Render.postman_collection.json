@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "API Transporte Compartido - Render",
+    "description": "Colección de endpoints para probar la API desplegada en Render",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://transporte-api.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Registro de Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.perez@example.com\",\n  \"telefono\": \"+573001234567\",\n  \"password\": \"Password123!\",\n  \"fecha_nacimiento\": \"1990-01-15\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', response.access_token);",
+                  "pm.collectionVariables.set('refresh_token', response.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Verificar Email",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-email?token=TU_TOKEN_AQUI",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify-email"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "TU_TOKEN_AQUI",
+                  "description": "Token recibido por email"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Obtener Perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "5. Renovar Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', response.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Reenviar Verificación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/resend-verification",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "resend-verification"]
+            }
+          }
+        },
+        {
+          "name": "7. Olvidé mi Contraseña",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "8. Resetear Contraseña",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"TU_TOKEN_AQUI\",\n  \"new_password\": \"NuevaPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "9. Desactivar Cuenta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "10. Solicitar Reactivación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/request-reactivation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "request-reactivation"]
+            }
+          }
+        },
+        {
+          "name": "11. Reactivar Cuenta",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/reactivate-account?token=TU_TOKEN_AQUI",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reactivate-account"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "TU_TOKEN_AQUI"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "12. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api",
+              "host": ["{{base_url}}"],
+              "path": ["api"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
