@@ -617,8 +617,7 @@ MIT License - Proyecto de Grado
 
 ## 👨‍💻 Autor
 
-**Proyecto de Grado** - App de Transporte Compartido  
-Universidad - Año 2024
+**Proyecto de Grado** - Ing. Brayan Villegas
 
 ---
 
