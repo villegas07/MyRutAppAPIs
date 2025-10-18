@@ -10,6 +10,9 @@ import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { UploadModule } from './upload/upload.module';
 import { RutasModule } from './rutas/rutas.module';
 import { OfertasModule } from './ofertas/ofertas.module';
+import { ViajesModule } from './viajes/viajes.module';
+import { CalificacionesModule } from './calificaciones/calificaciones.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -24,8 +27,10 @@ import { OfertasModule } from './ofertas/ofertas.module';
     UploadModule,
     RutasModule,
     OfertasModule,
+    ViajesModule,
+    CalificacionesModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {}

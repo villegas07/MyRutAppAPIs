@@ -42,6 +42,7 @@ async function bootstrap() {
   const appUrl = process.env.APP_URL || `http://localhost:${port}`;
   console.log(`🚀 Aplicación corriendo en: ${appUrl}/api`);
   console.log(`📂 Archivos estáticos: ${appUrl}/uploads`);
-  console.log(`📚 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`� Health Check: ${appUrl}/api/health`);
+  console.log(`�📚 Entorno: ${process.env.NODE_ENV || 'development'}`);
 }
 bootstrap();

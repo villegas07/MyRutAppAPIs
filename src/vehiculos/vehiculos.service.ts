@@ -56,14 +56,6 @@ export class VehiculosService {
             foto_perfil: true,
           },
         },
-        documentos: {
-          select: {
-            id_documento: true,
-            tipo_documento: true,
-            estado_verificacion: true,
-            fecha_vencimiento: true,
-          },
-        },
       },
       orderBy: { fecha_registro: 'desc' },
     });
@@ -87,21 +79,13 @@ export class VehiculosService {
             calificacion_conductor: true,
           },
         },
-        documentos: {
-          include: {
-            verificaciones: {
-              orderBy: { fecha_verificacion: 'desc' },
-              take: 1,
-            },
-          },
-        },
         rutas: {
           where: {
-            fecha_hora_salida: {
+            fecha_salida: {
               gte: new Date(),
             },
           },
-          orderBy: { fecha_hora_salida: 'asc' },
+          orderBy: { fecha_salida: 'asc' },
           take: 5,
         },
       },
@@ -166,7 +150,7 @@ export class VehiculosService {
     const rutasActivas = await this.prisma.ruta.count({
       where: {
         id_vehiculo: id,
-        fecha_hora_salida: {
+        fecha_salida: {
           gte: new Date(),
         },
       },

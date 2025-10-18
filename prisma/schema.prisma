@@ -210,6 +210,14 @@ model Viaje {
   distancia_recorrida       Decimal?       @db.Decimal(10, 2)
   fecha_confirmacion        DateTime       @default(now())
   codigo_verificacion       String?        @db.VarChar(10)
+  codigo_verificacion_inicio String?       @db.VarChar(10)
+  codigo_verificacion_fin   String?        @db.VarChar(10)
+  fecha_inicio_real         DateTime?
+  fecha_fin_real            DateTime?
+  latitud_actual            Decimal?       @db.Decimal(10, 8)
+  longitud_actual           Decimal?       @db.Decimal(11, 8)
+  motivo_cancelacion        String?        @db.Text
+  cancelado_por             String?        @db.VarChar(20)
   
   ruta                      Ruta           @relation(fields: [id_ruta], references: [id_ruta], onDelete: Cascade)
   oferta                    Oferta         @relation(fields: [id_oferta], references: [id_oferta], onDelete: Cascade)
@@ -251,19 +259,21 @@ model Pago {
 }
 
 model Calificacion {
-  id_calificacion  Int      @id @default(autoincrement())
-  id_viaje         Int
-  id_evaluador     Int
-  id_evaluado      Int
-  tipo_evaluacion  String   @db.VarChar(20)
-  puntuacion       Int
-  comentario       String?  @db.Text
+  id_calificacion    Int      @id @default(autoincrement())
+  id_viaje           Int
+  id_evaluador       Int
+  id_evaluado        Int
+  tipo_evaluacion    String   @db.VarChar(20)
+  puntuacion         Int
+  comentario         String?  @db.Text
   fecha_calificacion DateTime @default(now())
   
-  viaje            Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
-  evaluador        Usuario  @relation("EvaluadorCalificaciones", fields: [id_evaluador], references: [id_usuario], onDelete: Cascade)
-  evaluado         Usuario  @relation("EvaluadoCalificaciones", fields: [id_evaluado], references: [id_usuario], onDelete: Cascade)
+  viaje              Viaje    @relation(fields: [id_viaje], references: [id_viaje], onDelete: Cascade)
+  evaluador          Usuario  @relation("EvaluadorCalificaciones", fields: [id_evaluador], references: [id_usuario], onDelete: Cascade)
+  evaluado           Usuario  @relation("EvaluadoCalificaciones", fields: [id_evaluado], references: [id_usuario], onDelete: Cascade)
 
+  @@index([id_evaluado])
+  @@index([id_viaje])
   @@map("calificaciones")
 }
 
